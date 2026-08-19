@@ -1,7 +1,8 @@
 package com.auditlog;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.auditlog.audit_log_service.AuditLogServiceApplication;
@@ -10,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
 
 @SpringBootTest(classes = AuditLogServiceApplication.class)
 @AutoConfigureMockMvc
@@ -33,21 +36,28 @@ class SecurityIntegrationTest {
     @Test
     void auditorCanReadAuditEvents() throws Exception {
         mockMvc.perform(get("/api/audit/events")
-                        .with(httpBasic("auditor", "change-me-auditor")))
+                        .with(jwt().jwt(token -> token.claim("roles", List.of("AUDITOR")))))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void invalidPageSizeIsRejected() throws Exception {
+    void auditorCannotAppendAuditEvents() throws Exception {
+        mockMvc.perform(post("/api/audit/events")
+                        .with(jwt().jwt(token -> token.claim("roles", List.of("AUDITOR")))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void invalidPageSizeIsRejectedForAnAuthenticatedAuditor() throws Exception {
         mockMvc.perform(get("/api/audit/events?size=101")
-                        .with(httpBasic("auditor", "change-me-auditor")))
+                        .with(jwt().jwt(token -> token.claim("roles", List.of("AUDITOR")))))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void malformedTimestampIsRejectedAsBadRequest() throws Exception {
         mockMvc.perform(get("/api/audit/events?from=not-an-instant")
-                        .with(httpBasic("auditor", "change-me-auditor")))
+                        .with(jwt().jwt(token -> token.claim("roles", List.of("AUDITOR")))))
                 .andExpect(status().isBadRequest());
     }
 }

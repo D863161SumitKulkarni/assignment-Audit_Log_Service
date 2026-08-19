@@ -2,24 +2,24 @@ package com.auditlog.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.http.HttpMethod;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.Collection;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@EnableConfigurationProperties(SecurityProperties.class)
 public class SecurityConfig {
 
     @Bean
@@ -47,30 +47,30 @@ public class SecurityConfig {
                         .requestMatchers("/api/audit/**")
                         .hasRole("ADMIN")
                         .anyRequest().authenticated())
-                .httpBasic(basic -> {
-                });
+                                .oauth2ResourceServer(oauth2 -> oauth2
+                                                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
 
         return http.build();
     }
 
     @Bean
-    UserDetailsService userDetailsService(
-            PasswordEncoder passwordEncoder,
-            SecurityProperties securityProperties) {
-        UserDetails admin = User.withUsername(securityProperties.getAdmin().getUsername())
-                .password(passwordEncoder.encode(securityProperties.getAdmin().getPassword()))
-                .roles("ADMIN", "AUDITOR")
-                .build();
-        UserDetails auditor = User.withUsername(securityProperties.getAuditor().getUsername())
-                .password(passwordEncoder.encode(securityProperties.getAuditor().getPassword()))
-                .roles("AUDITOR")
-                .build();
+        Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter() {
+                return jwt -> {
+                        List<String> roles = jwt.getClaimAsStringList("roles");
+                        if (roles == null) {
+                                return List.of();
+                        }
+                        return roles.stream()
+                                        .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
+                                        .map(SimpleGrantedAuthority::new)
+                                        .map(authority -> (GrantedAuthority) authority)
+                                        .toList();
+                };
+        }
 
-        return new InMemoryUserDetailsManager(admin, auditor);
-    }
-
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        private JwtAuthenticationConverter jwtAuthenticationConverter() {
+                JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+                converter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter());
+                return converter;
     }
 }
