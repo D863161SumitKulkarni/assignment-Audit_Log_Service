@@ -115,6 +115,30 @@ This log records the AI-assisted work performed for the Audit Log Service assign
 - **Accepted solution:** `ChainVerificationService` now parses `payloadOriginal` with `JsonUtil` and serializes it canonically before hash recalculation. The old inconsistent smoke row was not rewritten, because silently repairing it would conceal the integrity signal.
 - **Validation:** Focused chain/security tests and the full Maven suite passed after the correction.
 
+### 14. Architecture documentation
+
+- **Request:** Create `docs/03-architecture-overview.md` covering system purpose, component diagram, package structure, data model, API groups, hash chain, redaction, retention, export, compliance reporting, decisions, trade-offs, and production hardening.
+- **AI assistance:** Reviewed the implemented Java package tree, security design, controllers, services, repository, entity, and PostgreSQL architecture, then drafted a Markdown overview aligned with the actual prototype.
+- **Human decision:** Accepted the architecture document with explicit limitations for concurrent appends, database-level append-only enforcement, export completeness, and production identity management.
+- **Artifact:** `docs/03-architecture-overview.md`
+- **Validation:** Markdown diagnostics reported no errors.
+
+### 15. Ongoing AI traceability
+
+- **Request:** Continue updating the AI usage log as the conversation continues.
+- **Accepted process:** Future AI-assisted changes should record the date, user request, context reviewed, solution provided, human acceptance or correction, artifact paths, and validation evidence in this file.
+- **Ownership:** The candidate remains responsible for the accuracy of this log and must correct any entry that does not reflect the actual work performed.
+
+### 16. Hash-chain design documentation
+
+- **Date:** 19/08/2026
+- **Request:** Create `docs/05-hash-chain-design.md` explaining the tamper-evident chain, hash fields, previous-link behavior, genesis value, SHA-256 rationale, server timestamps, verification algorithm, violation types, tamper detection, limitations, and archived/redacted record behavior.
+- **Context reviewed:** `HashService`, `ChainVerificationService`, `JsonUtil`, the audit entity, the PostgreSQL schema, and the existing architecture/API documents.
+- **AI solution provided:** Created a Markdown design document describing the actual delimiter-separated hash input, 64-zero genesis hash, JSONB re-canonicalization during verification, first-failure reporting, `PREVIOUS_HASH_MISMATCH`, `CURRENT_HASH_MISMATCH`, and production options including external anchoring, signatures, WORM storage, and immutable ledgers.
+- **Human decision:** Accepted the document as a prototype-level integrity design while retaining the stated limitations around malicious database administrators, concurrent appends, delimiter ambiguity, and lack of external notarization.
+- **Artifact:** `docs/05-hash-chain-design.md`
+- **Validation:** Markdown diagnostics reported no errors.
+
 ## Accepted Artifacts
 
 - Requirements and task decomposition documentation.
