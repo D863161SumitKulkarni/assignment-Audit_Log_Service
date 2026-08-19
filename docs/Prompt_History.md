@@ -366,4 +366,177 @@ Rules:
 10. Output complete Java file only.
 
 ======================================================
-Prompt 9 
+Prompt 9 Json Utility
+
+Create JsonUtil. java in package com.auditlog.util.
+
+Purpose:
+Provide deterministic JSON serialization for audit hashing.
+
+Requirements:
+1. Use Jackson ObjectMapper.
+2. Convert Map<String, Object> to canonical JSON string.
+3. Ensure stable ordering of object keys.
+Exclude null values only if explicitly configured in code comments.
+5. Provide method:
+public String toCanonicalison(Object value)
+6. Provide method:
+public Map‹String, Object> fromJsonToMap (String ison)
+7. Throw IllegalArgumentException with clear message if serialization fails.
+8. Use Java 21.
+9. Keep class as @Component.
+10. Output complete Java file only.
+
+========================================================
+
+Prompt 10 Core Services and APIs
+
+Create HashService. java in package com.auditlog.service.
+
+Purpose:
+Generate SHA-256 hashes for a tamper-evident audit log chain.
+
+Tech stack:
+Java 21, Spring Boot 3.
+
+Requirements:
+1. Use SHA-256.
+2. Output lowercase hex string.
+3. Provide method:
+public String sha256 (String input)
+4. Provide method:
+public String calculateAuditEventHash(
+String eventType,
+String actorId,
+String resourceType,
+String resourceld,
+String payloadCanonicalison,
+Instant eventTimestamp,
+String previousHash
+5. The hash input must include all fields in a deterministic order:
+eventType actorId resourceType resourceld payloadCanonicallson eventTimestamp.toString()
+previousHash
+6. Use a clear delimiter between fields.
+7. Validate arguments are not null.
+8. Throw IllegalArgumentException for invalid input.
+9. Class should be @Service.
+10. Output complete Java file only.
+
+Create AuditEventMapper. java in package com auditlogeservice.
+
+Purpose:
+Map AuditEvent entity to AuditEventResponse DTO.
+
+Requirements:
+1. Use Isonutit to convert payload JSON string to Map‹String, Object>.
+2. If AuditEvent is redacted and payloadRedacted is not null, response payload must use paxtoadRedacted.
+3. Otherwise response payload must use Rayloadoriginal.
+4. Map all response fields.
+5. Class should be @Component.
+6. Use Java 21.
+7. Output complete Java file only.
+
+Create AuditEventService.java in package com.auditlog.service.
+
+Purpose:
+Implement core business logic for append-only audit event creation and query.
+
+Tech stack:
+Java 21, Spring Boot 3, Spring Data JPA, PostgreSQL.
+
+Dependencies:
+AuditEventRepository
+Hashservice
+Isonutil
+AuditEventMapper
+
+Requirements:
+I
+1. Method createEvent (CreateAuditEventRequest request) returns AuditEventResponse.
+2. Server assigns eventTimestamp using Instant.now() .
+3. Convert request. payload to canonical JSON.
+4. Find latest AuditEvent ordered by id desc.
+5. If no latest event exists, use genesis hash of 64 zero characters.
+6. previousHash must be latest.currentHash or genesis hash.
+7. Calculate currentHash using HashService.
+8. Save AuditEvent.
+9. Do not implement update or delete.
+10. Method queryEvents(...) returns Page<AuditEventResponse›.
+11. Query filters:
+- actorId
+- resourceType
+- resourceld
+- eventType
+- from
+- to
+- includeArchived
+- Pageable
+12. Use AuditEventSpecifications.
+13. Sort by id ascending by default unless Pageable already has sort.
+14. Keep code readable and defensive.
+15. Annotate write method with @Transactional.
+16. Output complete Java file only.
+
+Create AuditEventController.java in package com.auditlog.controller.
+Purpose:
+Expose REST APIs for audit event write and query.
+Base path:
+/api/audit
+Endpoints:
+1. POST /events
+Request body: GreateAuditEventRequest
+Response: AuditEventResponse
+Status: 201 Created
+2. GET /events
+Query params:
+- actorId optional
+- resourcelype optional
+- resourceId optional
+- eventType optional
+- from optional Instant ISO-8601
+- to optional Instant ISO-8601
+- includeArchived optional Boolean default false
+- page default 0
+- size default 20
+Response: Page<AuditEventResponse>
+Requirements:
+1. Use @RestController.
+2. Use @RequestMapping("/api/audit").
+3. Use @Valid.
+4. Do not expose update or delete APIs.
+5. Add OpenAlI annotations if available.
+6. Use ResponseEntity.
+7. Output complete Java file only.
+
+Create ChainVerificationService.java in package com.auditlog.service.
+Purpose:
+Verify the tamper-evident audit log hash chain.
+Dependencies:
+AuditEventRepository
+HashService
+Requirements:
+1. Verify all AuditEvent records ordered by id ascending.
+2. Start expectedPreviousHash with genesis hash of 64 zero characters.
+3. For each record:
+a. Check record.previousHash equals expectedPreviousHash.
+b. Recalculate current hash from stored immutable fields:
+- eventType
+- actorId
+- resourceType
+- resourceld
+- payloadoriginal
+- eventTimestamp
+- previousHash
+c. Check recalculated hash equals record. currentHash.
+d. Set expectedPreviousHash to record. currentHash.
+4. Return VerifyChainResponse.
+5. If previousHash mismatch, violationType should be PREVIOUS_HASH_MISMATCH.
+6. If currentHash mismatch, violationType should be CURRENT_HASH_MISMATCH.
+7. If no issues, return chainIntact true and checkedRecords count.
+8. Archived records must still be included in verification because they remain part of the chain.
+9. Redacted records must verify using payloadoriginal, not payloadRedacted.
+10. Class should be @Service.
+11. Output complete Java file only.
+
+=====================================================
+
