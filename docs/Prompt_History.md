@@ -116,7 +116,7 @@ Requirements:
 2. Server port: 8080
 3. PostgreSQL URL: jdbc:postgresql://localhost:5432/auditlogdb
 4. Username: postgres
-5. Password placeholder: changeme
+5. Password placeholder: manager
 5. Hibernate ddl-auto: update for local prototype
 7. Show SQL: true
 3. Format SQL: true
@@ -126,3 +126,45 @@ Requirements:
 - hash algorithm SHA-256
 - genesis hash value with 64 zero characters
 Jse comments explaining which values should be changed locally. utput only the complete application properties.
+
+=================================================
+Prompt 4 Database Scema generation
+
+Create database/schema.sat for a PostgresQL audit log service.
+
+Table name: audit.event
+
+Columns:
+1. id BIGSERIAL primary key
+2. event id VUID unique not null
+3. event type VARCHAR(100) not null
+4. actorid VARCHAR (150) not nuil
+5. resource type VARCHAR (100) not null
+6. resource id VARCHAR (150) not null
+7. payload original JSONB not null
+8. pay-oad redacted JSONB null
+9. event timestamp TIMESTAMPTZ not null
+10. created at TIMESTAMPTZ not null default now
+11. previous. hash VARCHAR (64) not null
+12. currentash VARCHAR (64) not null
+13. hash_algorithm VARCHAR (50) not null default 'SHA-256'
+14. archived BOOLEAN not null default false
+15. archived at TIMESTAMPTZ null
+16. redacted BOOLEAN not null default false
+17. redacted at TIMESTAMPTZ null
+18. redaction reason TEXT null
+Indexes:
+1. actorid
+2. resource type, resource id
+3. event type
+4. event timestamp
+5. current hash
+6. previous hash
+7. archived
+
+Add comments explaining append-only intent and tamper-evident hash chain.
+
+Output only SQL.
+
+============================================================
+
