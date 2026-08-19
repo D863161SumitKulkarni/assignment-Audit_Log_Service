@@ -709,3 +709,97 @@ Requirements:
 4. Output complete Java file only.
 
 ======================================================
+
+Scenerio C Compliance Reporting
+
+===================================================
+
+Prompt 1 
+
+Create docs/08-scenario-c-compliance-reporting.md.
+
+Original
+ambiguous requirement:
+"Regulators need to be able to audit access to client account
+data."
+Create a professional ambiguity analysis.
+Include:
+1. Why the requirement is ambiguous.
+2. Clarifying questions:
+- What counts as client account data?
+- Which event types represent access?
+- Who are regulators?
+- What time range is required?
+- Is export required?
+- Should sensitive payload data be redacted?
+-What format
+is required?
+- What retention period applies?
+3. Assumptions made for this prototype.
+4. Normalized requirement statement.
+5. Technical design.
+6. Implemented scope.
+7. Out of scope.
+8. Validation approach.
+9. Risks and trade-offs.
+I
+My chosen implementation:
+Create a compliance report endpoint that returns audit events where resourceType equals CLIENT_ACCOUNT and eventType is one of ACCOUNT_VIEWED, ACCOUNT_EXPORTED, ACCOUNT_UPDATED, PERMISSION_GRANTED.
+Use markdown.
+Do not include Java code.
+
+Prompt 2 Services and Controller
+
+Create ComplianceReportService. java in package com auditlog service.
+Purpose:
+Implement Scenario C compliance reporting for client account data access.
+Dependencies:
+AuditEventRepository
+AuditEventMapper
+Method:
+public ComplianceReportResponse getClientAccountAccessReport(
+String clientAccountIa,
+String actorId,
+Instant from,
+Instant to
+Pageable pageable
+)
+
+Rules:
+1. resourceType must be CLIENT_ACCOUNT.
+2. If ctientAccountId is provided, filter resourceId equals stientAccountId.
+3. If actorId is provided, filter actorId equals actorid.
+4. Only include eventType values:
+- ACCOUNT_VIEWED
+- ACCOUNT_EXPORTED
+- ACCOUNT.
+_UPDATED
+- PERMISSION_GRANTED
+5. Support from and to filters on eventTimestamp.
+6. Exclude archived records by default.
+7. Map results to AuditEventResponse.
+8. totalRecords should represent returned page content size for prototype simplicity.
+9. Output complete Java file only.
+
+Create ComplianceReportController.java in package com.auditlog.contcoller.
+Base path:
+/api/audit/compliance
+Endpoint:
+GET /client-account-access
+Query params:
+- clientAccountid optional
+- actorid optional
+- from optional Instant ISO-8601
+- to optional Instant ISO-8681
+- page default e
+- size default 20
+Response:
+ComplianceReportResponse
+Requirements:
+1. Use ComplianceReportService.
+2. Use ResponseEntity.
+3. Add comments that this endpoint implements the clarified Scenario C prototype scope.
+4. Output complete Java file only.
+
+=========================================================
+
