@@ -40,6 +40,7 @@ public class ComplianceReportService {
             String actorId,
             Instant from,
             Instant to,
+            Boolean includeArchived,
             Pageable pageable) {
         if (pageable == null) {
             throw new IllegalArgumentException("pageable must not be null");
@@ -50,7 +51,9 @@ public class ComplianceReportService {
             predicates.add(criteriaBuilder.equal(
                     root.get("resourceType"), CLIENT_ACCOUNT_RESOURCE_TYPE));
             predicates.add(root.get("eventType").in(ACCESS_EVENT_TYPES));
-            predicates.add(criteriaBuilder.isFalse(root.get("archived")));
+            if (!Boolean.TRUE.equals(includeArchived)) {
+                predicates.add(criteriaBuilder.isFalse(root.get("archived")));
+            }
 
             if (clientAccountId != null) {
                 predicates.add(criteriaBuilder.equal(
@@ -79,7 +82,7 @@ public class ComplianceReportService {
         return ComplianceReportResponse.builder()
                 .generatedAt(Instant.now())
                 .clientAccountId(clientAccountId)
-                .totalRecords(accessEvents.size())
+                .totalRecords(resultPage.getTotalElements())
                 .accessEvents(accessEvents)
                 .build();
     }

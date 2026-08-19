@@ -29,7 +29,7 @@ $env:DB_PASSWORD = "<local-password>"
 .\mvnw.cmd clean test
 ```
 
-Verified Surefire result: **30 tests, 0 failures, 0 errors, 0 skipped**.
+Verified Surefire result: **32 tests, 0 failures, 0 errors, 0 skipped**.
 
 | Test class | Tests | Failures | Errors |
 | --- | ---: | ---: | ---: |
@@ -39,6 +39,7 @@ Verified Surefire result: **30 tests, 0 failures, 0 errors, 0 skipped**.
 | `AuditEventServiceTest` | 5 | 0 | 0 |
 | `ChainVerificationServiceTest` | 6 | 0 | 0 |
 | `RedactionServiceTest` | 8 | 0 | 0 |
+| `ComplianceReportServiceTest` | 2 | 0 | 0 |
 
 The security tests cover:
 
@@ -95,9 +96,7 @@ The live mismatch was useful evidence: PostgreSQL normalizes JSONB whitespace, w
 
 ### Medium priority
 
-1. Decide whether compliance reports include archived records for historical completeness and expose that policy explicitly.
-2. Change compliance `totalRecords` from current page size to `Page.getTotalElements()` if the API contract needs total matching records.
-3. Add controller integration tests for admin-only writes, redaction, retention, export, compliance filtering, and HTTP 404/400 responses.
+1. Add controller integration tests for admin-only writes, redaction, retention, export, compliance filtering, and HTTP 404/400 responses.
 4. Replace `PageImpl` JSON responses with a stable page DTO or Spring Data's documented page serialization mode.
 5. Replace `ddl-auto=update` with versioned migrations before deployment, and disable SQL logging outside local development.
 6. Replace delimiter-only hash input with canonical structured fields or explicit length/type framing to eliminate delimiter ambiguity.

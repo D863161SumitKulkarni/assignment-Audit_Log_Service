@@ -482,10 +482,11 @@ Return the clarified Scenario C compliance report for access to client account d
 | `actorId` | String | No | None | Exact match against `actorId`. |
 | `from` | Instant | No | None | Inclusive event timestamp lower bound. |
 | `to` | Instant | No | None | Inclusive event timestamp upper bound. |
+| `includeArchived` | Boolean | No | `false` | Set `true` to include archived compliance events. |
 | `page` | Integer | No | `0` | Must be at least 0. |
 | `size` | Integer | No | `20` | Must be between 1 and 100. |
 
-The service always filters `resourceType=CLIENT_ACCOUNT` and includes only `ACCOUNT_VIEWED`, `ACCOUNT_EXPORTED`, `ACCOUNT_UPDATED`, and `PERMISSION_GRANTED` events. Archived records are excluded by default in the current prototype.
+The service always filters `resourceType=CLIENT_ACCOUNT` and includes only `ACCOUNT_VIEWED`, `ACCOUNT_EXPORTED`, `ACCOUNT_UPDATED`, and `PERMISSION_GRANTED` events. Archived records are excluded by default, but can be included with `includeArchived=true` for historical reporting.
 
 ### Sample Request
 
@@ -537,7 +538,7 @@ Status: `200 OK`
 
 - Requires `AUDITOR` or `ADMIN`.
 - This is an assignment-level traceability report, not a legal compliance certification.
-- `totalRecords` currently represents the returned page content size for prototype simplicity.
+- `totalRecords` represents the total number of matching records across all pages.
 
 ## Error Response Contract
 

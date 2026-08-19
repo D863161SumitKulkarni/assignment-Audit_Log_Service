@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,21 +19,25 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuditEventService {
 
     private static final String GENESIS_HASH = "0".repeat(64);
+    private static final long APPEND_LOCK_KEY = 4_155_872_021L;
 
     private final AuditEventRepository auditEventRepository;
     private final HashService hashService;
     private final JsonUtil jsonUtil;
     private final AuditEventMapper auditEventMapper;
+    private final JdbcTemplate jdbcTemplate;
 
     public AuditEventService(
             AuditEventRepository auditEventRepository,
             HashService hashService,
             JsonUtil jsonUtil,
-            AuditEventMapper auditEventMapper) {
+            AuditEventMapper auditEventMapper,
+            JdbcTemplate jdbcTemplate) {
         this.auditEventRepository = auditEventRepository;
         this.hashService = hashService;
         this.jsonUtil = jsonUtil;
         this.auditEventMapper = auditEventMapper;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Transactional
@@ -41,6 +46,7 @@ public class AuditEventService {
             throw new IllegalArgumentException("request must not be null");
         }
 
+        acquireAppendLock();
         Instant eventTimestamp = Instant.now();
         String payloadOriginal = jsonUtil.toCanonicalJson(request.getPayload());
         String previousHash = auditEventRepository.findTopByOrderByIdDesc()
@@ -67,6 +73,14 @@ public class AuditEventService {
                 .build();
 
         return auditEventMapper.toResponse(auditEventRepository.save(auditEvent));
+    }
+
+    private void acquireAppendLock() {
+        // Transaction-scoped PostgreSQL lock serializes appends across application instances.
+        jdbcTemplate.query(
+                "SELECT pg_advisory_xact_lock(?)",
+                preparedStatement -> preparedStatement.setLong(1, APPEND_LOCK_KEY),
+                resultSet -> null);
     }
 
     @Transactional(readOnly = true)

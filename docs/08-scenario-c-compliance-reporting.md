@@ -49,7 +49,7 @@ For this assignment, the following assumptions define a deliberately narrow and 
 - The report is returned through a backend API as structured JSON.
 - The report uses the existing audit event query and response model rather than introducing a separate reporting store.
 - Redacted response payloads are returned when an event has been redacted; the original payload remains the integrity source for hash verification.
-- Archived records remain eligible for compliance reporting because they remain part of the audit chain.
+- Archived records are excluded by default but can be included explicitly for historical compliance reporting because they remain part of the audit chain.
 - A time range is supported by the underlying audit query contract, even though the exact regulator reporting period is not prescribed.
 - Authentication, regulator authorization, and legal compliance certification are not defined by the assignment and are therefore not claimed by this prototype.
 
@@ -102,7 +102,7 @@ The prototype implements the following Scenario C behavior:
 - JSON response delivery through the backend API.
 - Use of the existing audit event records and mapper.
 - Redacted response payload handling without changing the original hash commitment.
-- Inclusion of historical archived records when the report query requests them.
+- Inclusion of historical archived records when `includeArchived=true` is requested.
 - Independent hash-chain verification using original payload data.
 
 ## 7. Out of Scope

@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Min;
 import java.time.Instant;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,10 +33,14 @@ public class ComplianceReportController {
             @RequestParam(required = false) String actorId,
             @RequestParam(required = false) Instant from,
             @RequestParam(required = false) Instant to,
+            @RequestParam(defaultValue = "false") Boolean includeArchived,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         // This endpoint implements the clarified Scenario C prototype scope.
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(
+            page,
+            size,
+            Sort.by(Sort.Direction.ASC, "id"));
 
         return ResponseEntity.ok(
                 complianceReportService.getClientAccountAccessReport(
@@ -43,6 +48,7 @@ public class ComplianceReportController {
                         actorId,
                         from,
                         to,
+                        includeArchived,
                         pageable));
     }
 }

@@ -182,7 +182,7 @@ $env:DB_PASSWORD = "<local-postgres-password>"
 .\mvnw.cmd clean test
 ```
 
-The current verified baseline is 30 tests with zero failures, errors, or skips. The test inventory includes hashing, append behavior, chain verification, redaction, application wiring, security, malformed input, and pagination bounds.
+The current verified baseline is 32 tests with zero failures, errors, or skips. The test inventory includes hashing, append behavior, chain verification, compliance reporting, redaction, application wiring, security, malformed input, and pagination bounds.
 
 The full testing strategy is documented in [docs/09-testing-strategy.md](docs/09-testing-strategy.md).
 

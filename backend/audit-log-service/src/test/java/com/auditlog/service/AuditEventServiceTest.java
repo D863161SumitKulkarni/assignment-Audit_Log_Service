@@ -22,8 +22,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.ResultSetExtractor;
 
 @ExtendWith(MockitoExtension.class)
 class AuditEventServiceTest {
@@ -42,6 +46,9 @@ class AuditEventServiceTest {
     @Mock
     private AuditEventMapper auditEventMapper;
 
+        @Mock
+        private JdbcTemplate jdbcTemplate;
+
     private AuditEventService auditEventService;
 
     @BeforeEach
@@ -50,7 +57,8 @@ class AuditEventServiceTest {
                 auditEventRepository,
                 hashService,
                 jsonUtil,
-                auditEventMapper);
+                auditEventMapper,
+                jdbcTemplate);
         when(jsonUtil.toCanonicalJson(any())).thenReturn("{\"key\":\"value\"}");
         when(hashService.calculateAuditEventHash(
                 anyString(), anyString(), anyString(), anyString(), anyString(),
@@ -68,6 +76,7 @@ class AuditEventServiceTest {
 
         auditEventService.createEvent(createRequest());
 
+        verifyAppendLockAcquired();
         verify(hashService).calculateAuditEventHash(
                 eq("ACCOUNT_VIEWED"),
                 eq("actor-1"),
@@ -88,6 +97,7 @@ class AuditEventServiceTest {
 
         auditEventService.createEvent(createRequest());
 
+        verifyAppendLockAcquired();
         verify(hashService).calculateAuditEventHash(
                 anyString(), anyString(), anyString(), anyString(), anyString(),
                 any(Instant.class), eq("latest-current-hash"));
@@ -149,6 +159,13 @@ class AuditEventServiceTest {
         verify(auditEventRepository).save(eventCaptor.capture());
         return eventCaptor.getValue();
     }
+
+        private void verifyAppendLockAcquired() {
+                verify(jdbcTemplate).query(
+                                eq("SELECT pg_advisory_xact_lock(?)"),
+                                any(PreparedStatementSetter.class),
+                                ArgumentMatchers.<ResultSetExtractor<Void>>any());
+        }
 
     private void assertTrueBetween(Instant value, Instant lower, Instant upper) {
         assertTrue(value.equals(lower) || value.isAfter(lower));

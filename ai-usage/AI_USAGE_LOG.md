@@ -123,6 +123,26 @@ This log records the AI-assisted work performed for the Audit Log Service assign
 - **Artifact:** `docs/03-architecture-overview.md`
 - **Validation:** Markdown diagnostics reported no errors.
 
+### 17. Concurrent append serialization
+
+- **Date:** 19/08/2026
+- **Request:** Begin fixing the first identified high-priority problem: concurrent appends can read the same latest hash and fork the chain.
+- **Context reviewed:** `AuditEventService`, `AuditEventRepository`, append unit tests, the problem register, and PostgreSQL transaction behavior.
+- **AI solution provided:** Added a transaction-scoped PostgreSQL advisory lock through `JdbcTemplate`, acquired before latest-hash lookup and event persistence. This works across application instances sharing the database and does not rely on a JVM-local lock.
+- **Human decision:** Accepted advisory locking as the first prototype fix, while keeping the issue in progress until a real PostgreSQL concurrency integration test is added.
+- **Artifacts:** `AuditEventService.java`, `AuditEventServiceTest.java`, `docs/identified-problems-and-solutions.md`, `docs/03-architecture-overview.md`, and `docs/10-risks-tradeoffs-limitations.md`.
+- **Validation:** Focused append tests and full project compilation passed. Remaining validation is a concurrent PostgreSQL integration test covering chain continuity and rollback.
+
+### 18. Compliance reporting correctness
+
+- **Date:** 19/08/2026
+- **Request:** Continue execution by fixing the next identified problems after append serialization.
+- **Context reviewed:** `ComplianceReportService`, `ComplianceReportController`, compliance DTO/API documentation, testing strategy, and the identified-problems register.
+- **AI solution provided:** Added an explicit `includeArchived` query parameter defaulting to `false`, preserved the option to include archived records for historical reporting, forced deterministic ascending `id` ordering, and changed `totalRecords` to use the repository page's total matching count.
+- **Human decision:** Accepted the explicit archive-scope contract and full-count semantics as the clearer compliance API behavior.
+- **Artifacts:** `ComplianceReportService.java`, `ComplianceReportController.java`, `ComplianceReportServiceTest.java`, `docs/04-api-design.md`, `docs/08-scenario-c-compliance-reporting.md`, `docs/13-test-results-and-improvements.md`, and `docs/identified-problems-and-solutions.md`.
+- **Validation:** Focused compliance tests passed. The subsequent full suite passed 32 tests with zero failures, errors, or skips.
+
 ### 15. Ongoing AI traceability
 
 - **Request:** Continue updating the AI usage log as the conversation continues.

@@ -132,9 +132,9 @@ Production implementation requires stakeholder and legal clarification before th
 
 ### Concurrency during writes
 
-The current append workflow reads the latest hash and then saves a new event. Concurrent writers may read the same chain head and create competing records with the same `previousHash`. This can fork the chain.
+The append workflow now acquires a transaction-scoped PostgreSQL advisory lock before reading the latest hash. This prevents concurrent application instances from reading the same chain head and creating competing records with the same `previousHash`.
 
-Mitigation should serialize appends using a locked chain-head row, PostgreSQL advisory lock, serializable transaction strategy, or an equivalent mechanism with retry handling.
+A PostgreSQL concurrency integration test is still required to prove continuous links, rollback behavior, and lock handling under contention. Production should also define retry and timeout behavior for lock contention.
 
 ### Database transaction isolation
 
@@ -160,7 +160,7 @@ Verification currently loads and checks the complete chain. This is simple and t
 
 ## 11. Future Improvements
 
-1. Add serialized append writes and a PostgreSQL concurrency integration test.
+1. Add a PostgreSQL concurrency integration test and retry/timeout policy for serialized append writes.
 2. Enforce database-level append-only controls with roles, triggers, or write-only procedures.
 3. Add external chain-head anchoring and signed checkpoints.
 4. Replace delimiter hashing with canonical structured input and length framing.
