@@ -803,3 +803,34 @@ Requirements:
 
 =========================================================
 
+Global Exception Handler
+
+====================================================
+
+Prompt 
+
+Create exception handling classes for package com.auditlog.exception.
+Files:
+1. ResourceNotFoundException
+2. ApiErrorResponse
+3. GlobalExceptionHandler
+Requirements:
+1. ResourceNotFoundException extends RuntimeException.
+2. ApiErrorResponse fields:
+- Instant timestamp
+- int status
+- String error
+- String message
+- String path
+3. GlobalExceptionHandler handles:
+- ResourceNotFoundException with 404
+- MethodArgumentNotValidException with 400
+- IllegalArgumentException with 400
+- generic Exception with 500
+4. Use @RestControllerAdvice.
+5. Use Spring Boot 3 and Java 21.
+6. Output complete code for all three files, clearly separated by file name.
+
+============================================================
+
+
