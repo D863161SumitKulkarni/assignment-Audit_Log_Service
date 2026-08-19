@@ -573,3 +573,48 @@ Requirements:
 7. Output SQL only.|
 =======================================================
 
+SCENERIO B Retention
+
+=================================================
+
+Prompt 1 
+
+Retention Service 
+
+Create RetentionService.java in package com.auditlog.service.
+Purpose:
+Implement retention archival for audit events without breaking hash chain verification.
+Dependencies:
+AuditEventRepository
+Requirements:
+1. Method archiveEventsOlderThan(int days) returns long count.
+2. Find records with eventTimestamp older than Instant.now(). minus (days) .
+3. For each matching record:
+- set archived true
+- set archivedAt Instant.now()
+4. Do not modify payloadoriginal, previousHash, currentHash, or eventTimestamp.
+5. Do not physically delete records.
+6. Use @Transactional.
+7. Explain in code comments that archived records remain part of chain verification.
+8. Output complete Java file only.
+
+Retention Controller
+
+Create RetentionController. java in package com. audit-og. contreuter.
+Base path:
+/api/audit/retention
+Endpoint:
+POST /archive
+Query param.
+days optional integer default 90
+Response:
+Map with archivedCount and message.
+Requirements:
+1. Use RetentionService.
+2. Use ResponseEntity.
+3. Do not delete records.
+4. Make it clear this is archival only.
+5. Output complete Java file only.
+
+====================================================
+
