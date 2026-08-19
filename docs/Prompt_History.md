@@ -660,3 +660,52 @@ Requirements:
 6. Output complete Java file only.
 
 ===================================================
+
+Scenerio B Bulk Export
+
+==================================================
+
+Prompt 1
+
+Create ExportService. java in package com.auditlog.service.
+Purpose:
+Export audit events for a given actorId or resourceId as a self-contained verifiable bundle.
+Dependencies:
+AuditEventRepository
+AuditEventMapper
+HashService
+Isonutil
+Methods:
+1. ExportBundleResponse exportByActorId(String actorId)
+2. ExportBundleResponse exportyResourceId (String resourceld)
+Requirements:
+1. Load matching records ordered by id ascending.
+2. Include mapped AuditEventResponse records.
+3. Include firstRecordPreviousHash from first record.
+4. Include lastRecordCurrentHash from last record.
+5. Include hashAlgorithm SHA-256.
+6. Compute exportHash using SHA-256 over:
+- filterType
+- filterValue
+- exported record eventIds in order
+- firstRecordPreviousHash
+- LastRecordCurrentHash
+7. Use Instant. now() for exportedAt.
+8. If no records found, return empty records, null chain boundaries, and exportash over empty bundle metadata.
+9. Output complete Java file only.
+
+Create ExportController.java in package com.auditlog.controller.
+Base path:
+/api/audit/export
+Endpoints:
+1. GET /actor/{actorId)
+2. GET /resource/(resourcela}
+Response:
+ExportBundleResponse
+Requirements:
+1. Use ExportService.
+2. Use ResponseEntity.
+3. Return HTTP 200 even if bundle is empty.
+4. Output complete Java file only.
+
+======================================================
