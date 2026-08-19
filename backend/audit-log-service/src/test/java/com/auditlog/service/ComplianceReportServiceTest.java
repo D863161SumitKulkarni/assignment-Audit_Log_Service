@@ -1,7 +1,7 @@
 package com.auditlog.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.mockito.ArgumentMatchers;
 
 @ExtendWith(MockitoExtension.class)
 class ComplianceReportServiceTest {
@@ -45,7 +46,8 @@ class ComplianceReportServiceTest {
         AuditEventResponse response = AuditEventResponse.builder().build();
         PageRequest pageable = PageRequest.of(
                 0, 1, Sort.by(Sort.Direction.ASC, "id"));
-        when(auditEventRepository.findAll(any(Specification.class), eq(pageable)))
+        when(auditEventRepository.findAll(
+                ArgumentMatchers.<Specification<AuditEvent>>any(), eq(pageable)))
                 .thenReturn(new PageImpl<>(
                         List.of(event),
                         pageable,
@@ -71,7 +73,8 @@ class ComplianceReportServiceTest {
                 0,
                 20,
                 Sort.by(Sort.Direction.ASC, "id"));
-        when(auditEventRepository.findAll(any(Specification.class), eq(pageable)))
+        when(auditEventRepository.findAll(
+                ArgumentMatchers.<Specification<AuditEvent>>any(), eq(pageable)))
                 .thenReturn(new PageImpl<>(List.of()));
 
         complianceReportService.getClientAccountAccessReport(
@@ -82,7 +85,20 @@ class ComplianceReportServiceTest {
                 false,
                 pageable);
 
-        verify(auditEventRepository).findAll(any(Specification.class),
+        verify(auditEventRepository).findAll(
+                ArgumentMatchers.<Specification<AuditEvent>>any(),
                 org.mockito.ArgumentMatchers.eq(pageable));
     }
+
+        @Test
+        void rejectsReversedTimeRange() {
+                assertThrows(IllegalArgumentException.class, () ->
+                                complianceReportService.getClientAccountAccessReport(
+                                                null,
+                                                null,
+                                                java.time.Instant.parse("2026-08-20T00:00:00Z"),
+                                                java.time.Instant.parse("2026-08-19T00:00:00Z"),
+                                                false,
+                                                PageRequest.of(0, 20)));
+        }
 }

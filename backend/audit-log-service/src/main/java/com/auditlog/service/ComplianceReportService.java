@@ -45,6 +45,9 @@ public class ComplianceReportService {
         if (pageable == null) {
             throw new IllegalArgumentException("pageable must not be null");
         }
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new IllegalArgumentException("from must not be after to");
+        }
 
         Specification<AuditEvent> specification = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();

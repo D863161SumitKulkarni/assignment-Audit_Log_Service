@@ -39,6 +39,9 @@ CREATE INDEX idx_audit_event_actor_id
 CREATE INDEX idx_audit_event_resource
 	ON audit.event (resource_type, resource_id);
 
+CREATE INDEX idx_audit_event_resource_id
+	ON audit.event (resource_id);
+
 CREATE INDEX idx_audit_event_event_type
 	ON audit.event (event_type);
 
@@ -53,3 +56,23 @@ CREATE INDEX idx_audit_event_previous_hash
 
 CREATE INDEX idx_audit_event_archived
 	ON audit.event (archived);
+
+ALTER TABLE audit.event
+	ADD CONSTRAINT chk_audit_event_hashes
+	CHECK (
+		previous_hash ~ '^[0-9a-f]{64}$'
+		AND current_hash ~ '^[0-9a-f]{64}$'
+	);
+
+ALTER TABLE audit.event
+	ADD CONSTRAINT chk_audit_event_hash_algorithm
+	CHECK (hash_algorithm = 'SHA-256');
+
+ALTER TABLE audit.event
+	ADD CONSTRAINT chk_audit_event_archive_state
+	CHECK ((archived = FALSE AND archived_at IS NULL) OR archived = TRUE);
+
+ALTER TABLE audit.event
+	ADD CONSTRAINT chk_audit_event_redaction_state
+	CHECK ((redacted = FALSE AND redacted_at IS NULL AND payload_redacted IS NULL)
+		OR redacted = TRUE);

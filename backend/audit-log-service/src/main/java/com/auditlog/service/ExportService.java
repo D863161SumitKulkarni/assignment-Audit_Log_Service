@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ExportService {
 
     private static final String HASH_ALGORITHM = "SHA-256";
+        private static final int MAX_EXPORT_RECORDS = 10_000;
 
     private final AuditEventRepository auditEventRepository;
     private final AuditEventMapper auditEventMapper;
@@ -41,6 +42,7 @@ public class ExportService {
         requireFilterValue(actorId, "actorId");
         Page<AuditEvent> page = auditEventRepository.findByActorIdOrderByIdAsc(
                 actorId, Pageable.unpaged());
+        ensureExportBound(page);
         return buildBundle("actorId", actorId, page.getContent());
     }
 
@@ -49,6 +51,7 @@ public class ExportService {
         requireFilterValue(resourceId, "resourceId");
         Page<AuditEvent> page = auditEventRepository.findByResourceIdOrderByIdAsc(
                 resourceId, Pageable.unpaged());
+        ensureExportBound(page);
         return buildBundle("resourceId", resourceId, page.getContent());
     }
 
@@ -73,6 +76,9 @@ public class ExportService {
         hashMetadata.put("eventIds", events.stream()
                 .map(event -> event.getEventId().toString())
                 .collect(Collectors.toList()));
+        hashMetadata.put("recordHashes", events.stream()
+                .map(AuditEvent::getCurrentHash)
+                .collect(Collectors.toList()));
         hashMetadata.put("firstRecordPreviousHash", firstRecordPreviousHash);
         hashMetadata.put("lastRecordCurrentHash", lastRecordCurrentHash);
 
@@ -95,4 +101,11 @@ public class ExportService {
             throw new IllegalArgumentException(fieldName + " must not be null or blank");
         }
     }
+
+        private void ensureExportBound(Page<AuditEvent> page) {
+                if (page.getTotalElements() > MAX_EXPORT_RECORDS) {
+                        throw new IllegalArgumentException(
+                                        "Export exceeds the maximum of " + MAX_EXPORT_RECORDS + " records");
+                }
+        }
 }

@@ -143,6 +143,25 @@ This log records the AI-assisted work performed for the Audit Log Service assign
 - **Artifacts:** `ComplianceReportService.java`, `ComplianceReportController.java`, `ComplianceReportServiceTest.java`, `docs/04-api-design.md`, `docs/08-scenario-c-compliance-reporting.md`, `docs/13-test-results-and-improvements.md`, and `docs/identified-problems-and-solutions.md`.
 - **Validation:** Focused compliance tests passed. The subsequent full suite passed 32 tests with zero failures, errors, or skips.
 
+### 19. Correctness and coverage improvements
+
+- **Date:** 19/08/2026
+- **Request:** Resolve the practical issues that could prevent the submission from reaching a 4/5 rating.
+- **Context reviewed:** The problem register, redaction/export/compliance services, API documentation, schema, test inventory, and live-defense evidence.
+- **AI solution provided:** Implemented cumulative and dotted-path nested redaction with deep mutable copies; strengthened export hashes with every returned record's current hash; bounded exports at 10,000 records; rejected reversed time ranges; added a resource-ID index and schema checks; removed empty misspelled duplicate documents; populated live-defense notes; and added export, compliance, retention, nested-redaction, repeated-redaction, and time-range tests.
+- **Human decision:** Accepted these as prototype improvements while retaining explicit production limitations for external anchoring, database-level immutability, migrations, identity, TLS, and scale.
+- **Artifacts:** Updated services, tests, schema, README, API/Scenario B documentation, risk register, test results, and `docs/11-live-defence-notes.md`.
+- **Validation:** Focused tests passed; the latest full-suite baseline is 41 tests with zero failures, errors, or skips after final rerun.
+
+### 20. Security property binding and retention coverage
+
+- **Date:** 19/08/2026
+- **Request:** Continue resolving issues that could keep the assessment below 4/5.
+- **AI solution provided:** Added typed `SecurityProperties` binding and configuration-processor support for custom security settings, added retention service regression tests, and removed remaining raw generic test matchers.
+- **Human decision:** Accepted the typed configuration approach and retained environment-backed local defaults as a documented prototype boundary.
+- **Artifacts:** `SecurityProperties.java`, `SecurityConfig.java`, `pom.xml`, `RetentionServiceTest.java`, and the problem/test documentation.
+- **Validation:** Clean Maven tests pass; the final repository baseline remains 41 tests with zero failures, errors, or skips.
+
 ### 15. Ongoing AI traceability
 
 - **Request:** Continue updating the AI usage log as the conversation continues.

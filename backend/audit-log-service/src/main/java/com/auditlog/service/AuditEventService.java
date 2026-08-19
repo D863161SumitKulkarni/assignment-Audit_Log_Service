@@ -96,6 +96,7 @@ public class AuditEventService {
         if (pageable == null) {
             throw new IllegalArgumentException("pageable must not be null");
         }
+        validateTimeRange(from, to);
 
         Pageable effectivePageable = pageable;
         if (pageable.isPaged() && !pageable.getSort().isSorted()) {
@@ -116,5 +117,11 @@ public class AuditEventService {
                                 includeArchived),
                         effectivePageable)
                 .map(auditEventMapper::toResponse);
+    }
+
+    private void validateTimeRange(Instant from, Instant to) {
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new IllegalArgumentException("from must not be after to");
+        }
     }
 }

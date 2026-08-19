@@ -7,7 +7,8 @@ import com.auditlog.exception.ResourceNotFoundException;
 import com.auditlog.repository.AuditEventRepository;
 import com.auditlog.util.JsonUtil;
 import java.time.Instant;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -44,9 +45,12 @@ public class RedactionService {
             .orElseThrow(() -> new ResourceNotFoundException(
                         "Audit event not found: " + eventId));
 
-        Map<String, Object> redactedPayload = new HashMap<>(
-                jsonUtil.fromJsonToMap(auditEvent.getPayloadOriginal()));
-        request.getFieldsToRedact().forEach(redactedPayload::remove);
+        String sourcePayload = auditEvent.getPayloadRedacted() != null
+            ? auditEvent.getPayloadRedacted()
+            : auditEvent.getPayloadOriginal();
+        Map<String, Object> redactedPayload = copyMap(
+            jsonUtil.fromJsonToMap(sourcePayload));
+        request.getFieldsToRedact().forEach(field -> removeField(redactedPayload, field));
 
         Instant redactedAt = Instant.now();
         auditEvent.setPayloadRedacted(jsonUtil.toCanonicalJson(redactedPayload));
@@ -56,5 +60,36 @@ public class RedactionService {
 
         // Redaction changes only the response representation; original payload and hashes remain immutable.
         return auditEventMapper.toResponse(auditEventRepository.save(auditEvent));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void removeField(Map<String, Object> payload, String fieldPath) {
+        String[] path = fieldPath.split("\\.");
+        Map<String, Object> current = payload;
+        for (int index = 0; index < path.length - 1; index++) {
+            Object nested = current.get(path[index]);
+            if (!(nested instanceof Map<?, ?> nestedMap)) {
+                return;
+            }
+            current = (Map<String, Object>) nestedMap;
+        }
+        current.remove(path[path.length - 1]);
+    }
+
+    private Map<String, Object> copyMap(Map<String, Object> source) {
+        Map<String, Object> copy = new LinkedHashMap<>();
+        source.forEach((key, value) -> copy.put(key, copyValue(value)));
+        return copy;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object copyValue(Object value) {
+        if (value instanceof Map<?, ?> map) {
+            return copyMap((Map<String, Object>) map);
+        }
+        if (value instanceof List<?> list) {
+            return list.stream().map(this::copyValue).toList();
+        }
+        return value;
     }
 }

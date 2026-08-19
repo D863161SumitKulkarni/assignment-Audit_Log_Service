@@ -56,7 +56,7 @@ class RedactionServiceTest {
 
         lenient().when(auditEventRepository.findByEventId(EVENT_ID))
                 .thenReturn(Optional.of(auditEvent));
-        lenient().when(jsonUtil.fromJsonToMap(auditEvent.getPayloadOriginal()))
+        lenient().when(jsonUtil.fromJsonToMap(any(String.class)))
                 .thenReturn(Map.of(
                         "name", "Alice",
                         "email", "alice@example.com"));
@@ -122,6 +122,31 @@ class RedactionServiceTest {
         assertEquals("current-hash", auditEvent.getCurrentHash());
         assertEquals("previous-hash", auditEvent.getPreviousHash());
     }
+
+        @Test
+        void repeatedRedactionDoesNotReExposePreviouslyRemovedField() {
+        redactionService.redactEvent(EVENT_ID, request("email"));
+        auditEvent.setPayloadRedacted("{\"name\":\"Alice\"}");
+        when(jsonUtil.fromJsonToMap(auditEvent.getPayloadRedacted()))
+            .thenReturn(Map.of("name", "Alice"));
+
+        redactionService.redactEvent(EVENT_ID, request("phone"));
+
+        verify(jsonUtil, org.mockito.Mockito.times(2))
+            .toCanonicalJson(Map.of("name", "Alice"));
+        }
+
+        @Test
+        void redactsNestedFieldPath() {
+        when(jsonUtil.fromJsonToMap(auditEvent.getPayloadOriginal()))
+            .thenReturn(Map.of(
+                "profile", Map.of("email", "alice@example.com", "name", "Alice")));
+
+        redactionService.redactEvent(EVENT_ID, request("profile.email"));
+
+        verify(jsonUtil).toCanonicalJson(Map.of(
+            "profile", Map.of("name", "Alice")));
+        }
 
     @Test
     void throwsResourceNotFoundExceptionWhenEventIdIsMissing() {

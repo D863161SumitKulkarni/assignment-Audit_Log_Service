@@ -6,9 +6,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.auditlog.dto.AuditEventResponse;
 import com.auditlog.dto.CreateAuditEventRequest;
@@ -59,13 +61,13 @@ class AuditEventServiceTest {
                 jsonUtil,
                 auditEventMapper,
                 jdbcTemplate);
-        when(jsonUtil.toCanonicalJson(any())).thenReturn("{\"key\":\"value\"}");
-        when(hashService.calculateAuditEventHash(
+        lenient().when(jsonUtil.toCanonicalJson(any())).thenReturn("{\"key\":\"value\"}");
+        lenient().when(hashService.calculateAuditEventHash(
                 anyString(), anyString(), anyString(), anyString(), anyString(),
                 any(Instant.class), anyString())).thenReturn("generated-hash");
-        when(auditEventRepository.save(any(AuditEvent.class)))
+        lenient().when(auditEventRepository.save(any(AuditEvent.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(auditEventMapper.toResponse(any(AuditEvent.class)))
+        lenient().when(auditEventMapper.toResponse(any(AuditEvent.class)))
                 .thenReturn(AuditEventResponse.builder().build());
     }
 
@@ -142,6 +144,19 @@ class AuditEventServiceTest {
         verify(auditEventRepository, never()).deleteAll();
         verify(auditEventRepository, never()).deleteAll(any());
     }
+
+        @Test
+        void queryRejectsReversedTimeRange() {
+                assertThrows(IllegalArgumentException.class, () -> auditEventService.queryEvents(
+                                null,
+                                null,
+                                null,
+                                null,
+                                Instant.parse("2026-08-20T00:00:00Z"),
+                                Instant.parse("2026-08-19T00:00:00Z"),
+                                false,
+                                org.springframework.data.domain.PageRequest.of(0, 20)));
+        }
 
     private CreateAuditEventRequest createRequest() {
         return CreateAuditEventRequest.builder()

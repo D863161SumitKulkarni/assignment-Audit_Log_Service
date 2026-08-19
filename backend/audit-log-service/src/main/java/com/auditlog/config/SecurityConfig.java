@@ -1,8 +1,8 @@
 package com.auditlog.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,6 +19,7 @@ import org.springframework.http.HttpMethod;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@EnableConfigurationProperties(SecurityProperties.class)
 public class SecurityConfig {
 
     @Bean
@@ -55,16 +56,13 @@ public class SecurityConfig {
     @Bean
     UserDetailsService userDetailsService(
             PasswordEncoder passwordEncoder,
-            @Value("${audit.security.admin.username:admin}") String adminUsername,
-            @Value("${audit.security.admin.password:change-me-admin}") String adminPassword,
-            @Value("${audit.security.auditor.username:auditor}") String auditorUsername,
-            @Value("${audit.security.auditor.password:change-me-auditor}") String auditorPassword) {
-        UserDetails admin = User.withUsername(adminUsername)
-                .password(passwordEncoder.encode(adminPassword))
+            SecurityProperties securityProperties) {
+        UserDetails admin = User.withUsername(securityProperties.getAdmin().getUsername())
+                .password(passwordEncoder.encode(securityProperties.getAdmin().getPassword()))
                 .roles("ADMIN", "AUDITOR")
                 .build();
-        UserDetails auditor = User.withUsername(auditorUsername)
-                .password(passwordEncoder.encode(auditorPassword))
+        UserDetails auditor = User.withUsername(securityProperties.getAuditor().getUsername())
+                .password(passwordEncoder.encode(securityProperties.getAuditor().getPassword()))
                 .roles("AUDITOR")
                 .build();
 

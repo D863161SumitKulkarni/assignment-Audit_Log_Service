@@ -236,7 +236,9 @@ A reviewer can independently inspect an export by:
 4. Recalculating `exportHash` with SHA-256.
 5. Calling `GET /api/audit/verify` against the source service to validate the complete chain.
 
-The current export hash commits to event IDs and boundary hashes. It does not yet commit every middle record's complete canonical content, so a stronger production export should include every record hash or a Merkle-root-style commitment.
+The current export hash commits to event IDs, every returned record's `currentHash`, and boundary hashes. It does not prove global completeness outside the filter, so a stronger production bundle should include a source checkpoint or Merkle-root-style completeness commitment.
+
+The prototype rejects exports larger than 10,000 records. Production-scale exports should stream or chunk records rather than load an unpaged result into memory.
 
 ## 5. Limitations
 

@@ -395,7 +395,8 @@ Status: `200 OK`
 - Blank or missing actor IDs return a client error.
 - Matching records are ordered by database ID ascending.
 - Empty results return HTTP 200 with an empty list and null chain boundaries.
-- The export hash includes filter metadata, ordered event IDs, and chain boundaries.
+- The export hash includes filter metadata, ordered event IDs, every returned record's current hash, and chain boundaries.
+- Exports are bounded to 10,000 records in the prototype.
 
 ### Notes
 

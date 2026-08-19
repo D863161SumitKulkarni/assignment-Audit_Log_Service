@@ -29,7 +29,7 @@ $env:DB_PASSWORD = "<local-password>"
 .\mvnw.cmd clean test
 ```
 
-Verified Surefire result: **32 tests, 0 failures, 0 errors, 0 skipped**.
+Verified Surefire result: **41 tests, 0 failures, 0 errors, 0 skipped**.
 
 | Test class | Tests | Failures | Errors |
 | --- | ---: | ---: | ---: |
@@ -40,6 +40,8 @@ Verified Surefire result: **32 tests, 0 failures, 0 errors, 0 skipped**.
 | `ChainVerificationServiceTest` | 6 | 0 | 0 |
 | `RedactionServiceTest` | 8 | 0 | 0 |
 | `ComplianceReportServiceTest` | 2 | 0 | 0 |
+| `ExportServiceTest` | 2 | 0 | 0 |
+| `RetentionServiceTest` | 3 | 0 | 0 |
 
 The security tests cover:
 
