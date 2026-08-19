@@ -907,4 +907,285 @@ Test cases:
 7. Does not modify currentHash or previoushash.
 8. Throws ResourceNotFoundException when eventId is missing.
 Output complete test file only.
-============================================================
+=========================================================
+
+Architecture overview
+
+=========================================================
+
+prompt 
+
+Create docs/03-architecture-overview.md for the audit log service.
+Include:
+1. System purpose.
+2. Component diagram in text form.
+3. Package structure.
+4. Data model summary.
+5. API groups.
+6. Hash chain design.
+7. Redaction design.
+8. Retention design.
+9. Export design.
+10. Compliance reporting design.
+11. Key design decisions.
+12. Trade-offs.
+13. Production hardening opportunities.
+Mention:
+- Backend API only.
+- PostgreSQL as durable store.
+- SHA-256 hash chain.
+- Append-only API.
+I
+- Server-assigned timestamps.
+- Archived records remain part of verification.
+- Redacted responses preserve chain verification by not changing immutable original payload.
+Use clear markdown.
+
+=========================================================
+
+API Design DOC
+
+=========================================================
+
+prompt 
+
+Create docs/04-api-design.md.
+Document all APIs:
+1. POST /api/audit/events
+2. GET /api/audit/events
+3. GET /api/audit/verify
+4. POST/api/audit/retention/archive
+5. POST/api/audit/events/(eventId}/redact
+6. GET /api/audit/export/actor/{actorId}
+7. GET /api/audit/export/resource/{resourceld}
+8. GET /api/audit/compliance/client-account-access
+For each API include:
+- Purpose
+- Request parameters
+- Sample request
+- Sample response
+- Validation rules
+- Notes
+Mention explicitly:
+No update or delete API is exposed for audit events.
+Use markdown.
+
+========================================================
+
+Hash Chain Design Doc
+
+=========================================================
+
+prompt 
+
+Create docs/05-hash-chain-design.md.
+Explain the tamper-evident hash chain design.
+Include:
+1. Goal.
+2. Fields included in currentHash.
+3. RreviousHash behavior.
+4. Genesis hash value.
+5. SHA-256 rationale.
+6. Server-assigned timestamp rationale.
+7. Verification algorithm step by step.
+8. Violation types:
+- PREVIOUS_HASH_MISMATCH
+- CURRENT_HASH_MISMATCH
+9. Why direct database tampering is detected.
+10. Limitations:
+- Database administrator can modify all hashes if fully malicious.
+- Stronger production system would use external anchoring, signatures, WORM storage, or immutable ledge
+11. Why archived and redacted records do not break verification.
+Use clear markdown.
+
+=======================================================
+
+Scenerio A Validation 
+
+=======================================================
+
+prompt 
+
+Create docs/06-scenario-a-validation.md.
+Document how to validate Scenario A.
+Include:
+1. Start application.
+2. Create first audit event using curl.
+3. Create second audit event using curl.
+4. Query events by actorId.
+5. Query events by resourceType and resourcela.
+6. Query events by eventType.
+7. Query events by time range.
+8. Verify chain using GET /api/audit/verify.
+9. Tamper directly in PostgreSQL using database/tamper-test.sq1.
+10. Run verify again and expect chainIntact false.
+11. Expected violation type.
+12. Screenshots placeholder section.
+13. Troubleshooting notes.
+Use markdown and curl examples.
+
+=======================================================
+
+Scenerio B Doc
+
+=======================================================
+
+prompt 
+
+Create docs/07-scenario-b-retention-redaction-export.md.
+Document Scenario B implementation.
+Sections:
+1. Overview.
+2. Retention policy:
+- soft archival
+- configurable window
+- no physical deletion
+- archived records remain in chain verification
+3. Structured redaction:
+- Ray-oadoriginal remains immutable
+- paxloadRedacted is returned to API clients
+- hash chain continues using payloadoriginal
+- trade-off: sensitive data is hidden from API but still stored internally
+- production alternative: encryption with key destruction or cryptographic commitments
+4. Bulk export:
+- export by actorId
+- export by resourceld
+- includes first previous hash, last current hash, hash algorithm, export hash
+- independent verification concept
+5. Validation examples using curl.
+6. Limitations.
+7. Future hardening.
+Use clear markdown.
+
+======================================================
+
+Testing Strategy
+
+======================================================
+prompt
+
+Create docs/09-testing-strategy.md.
+Document testing strategy for the audit log service.
+Include:
+1. Unit tests.
+2. Service tests.
+3. Controller/API tests.
+4. Manual validation using curl.
+5. Manual PostgreSQL tamper test.
+6. What is tested:
+- hash determinism
+- append-only creation
+- previousHash linkage
+- verification success
+- verification failure after tampering
+- query filtering
+- pagination
+- retention archive behavior
+- redaction behavior
+- export bunale metadata
+- compliance reporting
+7. What is not tested and why.
+8. Quality gates before submission:
+- mvn clean test
+- swagger check
+- verify endpoint check
+- tamper SQL check
+9. Known limitations.
+Use markdown.
+
+================================================================
+
+Risk and Tradeoffs
+
+================================================================
+
+Create docs/10-risks-tradeoffs-limitations.md.
+For the audit log service, document:
+1. Tamper-evidence versus tamper-prevention.
+2. Risk of privileged database administrator modifying all records and hashes.
+3. Need for external anchoring in production.
+4. SHA-256 choice and limitations.
+5. Server-assigned timestamp trade-off.
+6. Redaction trade-off:
+- API redaction works
+- original data remains stored for verification
+- stronger production option would use encryption and key destruction or commitments
+7. Retention trade-off:
+- archive not physical deletion
+- preserves verification
+8. Export limitations:
+- verifies exported bundle integrity
+- does not prove global completeness unless additional proof is included
+9. Compliance reporting scope limitations.
+10. Operational risks:
+- concurrency during writes
+- database transaction isolation
+- performance for full-chain verification
+11. Future improvements.
+Use professional markdown.
+
+=========================================================
+
+README
+
+=========================================================
+
+prompt
+
+Create root README. md for the audit-log-service repository.
+Include:
+H1 V
+
+1. Project title.
+
+2. Assignment summary.
+3. Tech stack:
+
+- Java 21
+
+- Spring Boot 3
+
+- PostgreSQL
+
+- Maven
+
+- Swagger/OpenAPI
+
+4. What the system does.
+
+5. Repository structure.
+
+6. How to run locally:
+
+- create PostgreSQL database auditlogdb
+- update application properties password
+
+- cd backend
+-mvn spring-boot: run
+
+7. Swagger URL:
+
+http://localhost:8080/swagger-ui/index.html
+
+8. API summary.
+
+9. Scenario A validation.
+
+10. Scenario B validation.
+
+11. Scenario C validation.
+
+12. How to run tests:
+
+mvn clean test
+
+13. Tamper test instructions.
+14. AI usage and traceability.
+
+15. Limitations.
+
+16. Live defense notes.
+
+Use professional markdown.
+
+=================================================================
