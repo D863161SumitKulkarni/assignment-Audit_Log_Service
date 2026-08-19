@@ -833,4 +833,78 @@ Requirements:
 
 ============================================================
 
+TESTS Entities (As per scenerios)
 
+==========================================================
+
+prompt 1 Hash service test
+
+Create HashServiceTest. java for package com.auditlog service.
+Test class:
+HashserviceTest
+Requirements:
+1. Use JUnit 5.
+2. Test sha256 returns 64 character lowercase hex.
+3. Test same input produces same hash.
+4. Test different input produces different hash.
+5. Test calculateAuditEventHash includes previousHash by showing different previousHash changes output.
+6. Test null input throws IllegalArgumentException.
+7. Output complete test file only.
+
+prompt 2 Audit Event Service test
+
+Create AuditEventServiceTest.java for package com. auditlog.service.
+Purpose:
+Unit test append-only audit event creation.
+Use:
+JUnit 5
+Mockito
+Mock:
+AuditEventRepository
+HashService
+Isonutil
+AuditEventMapper
+Test cases:
+1. First event uses genesis previousHash.
+2. Second event uses latest record currentash as previousHash.
+3. createEvent saves AuditEvent with generated currentHash.
+4. createEvent assigns server timestamp.
+5. createEvent does not call any update or delete operation.
+Keep test focused and compile-ready.
+Output complete Java test file only.
+
+prompt 3 chain verification service test
+
+Create ChainVerificationServiceTest. java for package com.auditlog. service.
+Use:
+JUnit 5
+Mockito
+Mock:
+AuditEventRepository
+HashService
+Test cases:
+1. Empty chain returns chainIntact true.
+2. Valid chain with two records returns chainIntact true.
+3. previousHash mismatch returns chainIntact false and violationType PREVIOUS_HASH_MISMATCH.
+4. currentash mismatch returns chainIntact false and KielationType CURRENT_HASH_MISMATCH.
+5. Archived record is still included in verification.
+6. Redacted record verifies using payloadoriginal.
+Output complete test file only.
+
+Prompt 4 Redaction Service Test
+
+Create RedactionServiceTest. java for package com. auditlog.secvice.
+Use:
+JUnit 5
+Mockito
+Test cases:
+1. Redacts existing top-level payload field.
+2. Ignores missing field without failing.
+3. Sets redacted true.
+4. Sets redactedAt.
+5. Stores redactionReason.
+6. Does not modify paytoadoriginat.
+7. Does not modify currentHash or previoushash.
+8. Throws ResourceNotFoundException when eventId is missing.
+Output complete test file only.
+============================================================

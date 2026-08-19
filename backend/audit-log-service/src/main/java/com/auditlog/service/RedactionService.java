@@ -3,6 +3,7 @@ package com.auditlog.service;
 import com.auditlog.dto.AuditEventResponse;
 import com.auditlog.dto.RedactAuditEventRequest;
 import com.auditlog.entity.AuditEvent;
+import com.auditlog.exception.ResourceNotFoundException;
 import com.auditlog.repository.AuditEventRepository;
 import com.auditlog.util.JsonUtil;
 import java.time.Instant;
@@ -40,7 +41,7 @@ public class RedactionService {
         }
 
         AuditEvent auditEvent = auditEventRepository.findByEventId(eventId)
-                .orElseThrow(() -> new IllegalArgumentException(
+            .orElseThrow(() -> new ResourceNotFoundException(
                         "Audit event not found: " + eventId));
 
         Map<String, Object> redactedPayload = new HashMap<>(
