@@ -167,4 +167,203 @@ Add comments explaining append-only intent and tamper-evident hash chain.
 Output only SQL.
 
 ============================================================
+Prompt 5 Backend Package Structure
 
+backend/src/main/java/com/auditlog/config
+backend/src/main/java/com/auditlog/controller
+backend/src/main/java/com/auditlog/dto
+backend/src/main/java/com/auditlog/entity
+backend/src/main/java/com/auditlog/exception backend/src/main/java/com/auditlog/repository backend/src/main/java/com/auditlog/service backend/src/main/java/com/auditlog/util
+
+==================================================
+
+Prompt 6 Audit Entity Creation
+
+Tech stack:
+
+Java 21, Spring Boot 3, Jakarta Persistence, Lombok, PostgreSQL.
+
+Entity:
+audit event
+
+Fields:
+
+1. Long id, generated identity primary key
+
+2. UUID eventId, unique, not null
+
+3. String eventType, not null, max length 100
+
+4. String actorId, not null, max length 150
+
+5. String resourceType, not null, max length 100
+
+6. String resourceld, not null, max length 150
+
+7. String payloadoriginal, not null, column type isonb
+
+8. String payloadRedacted, nullable, column type isonb
+
+9. Instant eventTimestamp, not null
+
+10. Instant createdAt, not null
+
+11. String previousHash, not null, length 64
+
+12. String currentHash, not null, length 64
+
+13. String hashAlgorithm, not null, default SHA-256
+14. boolean archived
+
+15. Instant archivedAt
+
+16. boolean redacted
+
+17. Instant redactedAt
+
+18. String redactionReason, column type text
+
+Requirements:
+
+1. Use @Entity and @Table.
+2. Use @Prepersist to set eventId if null and createdAt if null.
+3. Use Lombok Getter, Setter, NoArgsConstructor, AllArgsConstructor, Builder.
+4. Use Jakarta imports, not javax.
+5. Do not add business logic here except lifecycle defaults.
+6. Keep it production-readable.
+
+Output complete Java file only.
+
+======================================================
+
+Prompt 7 Dto Creation 
+
+Create DTO classes in package com.auditlog.dto for an audit log service.
+
+Use Java 21, Spring Boot 3, Lombok, Jakarta Validation.
+
+Create these DTOS:
+
+1. CreateAuditEventRequest
+Fields:
+- eventType String, required
+- actorld String, required
+- resourceType String, required
+- resourceld String, required
+- payload Map‹String, Object>, required
+Note: timestamp is not accepted from caller because server assigns timestamp.
+
+2. AuditEventResponse
+Fields:
+-UUID eventId
+- String eventType
+- String actorId
+- String resourceType
+- String resourceld
+- Map<String, object> payload
+- Instant eventTimestamp
+- Instant createdAt
+- String previousHash
+- String currentHash
+- String hashAlgorithm
+- boolean archived
+- boolean redacted
+
+3. VerifyChainResponse
+Fields:
+- boolean chainIntact
+- long checkedRecords
+- UUID firstBrokenEventId
+- Long firstBrokenDatabaseId
+- String violationType
+- String expectedValue
+- String actualValue
+- String message
+
+4. RedactAuditEventRequest
+Fields:
+- List‹String› fieldsToRedact, required
+- String reason, required
+
+5. ExportBundleResponse
+Fields:
+- Instant exportedAt
+- String filterType
+- String filterValue
+- List<AuditEventResponse> records
+- String firstRecordPreviousHash
+- String lastRecordCurrentHash
+- String hashAlgorithm
+- String exportHash
+
+6. ComplianceReportResponse
+Fields:
+- Instant generatedAt
+- String clientAccountId
+- long totalRecords
+- List<AuditEventResponse> accessEvents
+
+Requirements:
+- Use Lombok Data, Builder, NoArgsConstructor, AllArgsConstructor.
+- Use validation annotations on request DTOs.
+- Use java. time. Instant.
+- Use iava.util.UUID.
+- Use java.util.Map and List.
+- Output complete code for all files, clearly separated by file name.
+
+===========================================
+
+Prompt 8 Repositiory Creation
+
+Create AuditEventRepository.java in package com.audit_og. repository.
+
+Entity:
+AuditEvent
+
+Requirements:
+1. Extend IpaRepository<AuditEvent, Long>.
+2. Add Optional<AuditEvent> findTopßyOrderByIdDess() •
+3. Add Optional< AuditEvent> findBYEventId(UUID eventId).
+4. Add List<AuditEvent> findAllByOrderByIdAsc() .
+5. Add Page<AuditEvent> query support for dynamic filters using paspecificationExecutor.
+6. Add methods useful for export:
+- Page<AuditEvent> findByActorIdOrderByIdAsc(String actorId, Pageable pageable)
+- Page<AuditEvent> findByResourceIdOrderByIdAsc(String resourceId, Pageable pageable)
+7. Use Java 21 and Spring Data JPA.
+8. Output complete Java file only.
+
+Audit event Filters
+
+Create AuditEventSpecifications. java in package com. auditlog.repositery.
+
+Purpose:
+Build dynamic JPA Specifications for AuditEvent query filters.
+
+Entity fields:
+actorId, resourcelype, resourceld, eventType, eventTimestamp, archived.
+
+Required method:
+
+public static Specification<AuditEvent> withFiaters
+String actorId,
+String resourceType,
+String resourceId, String eventType,
+Instant from,
+Instant to,
+Boolean includeArchived
+B IS O
+)
+Rules:
+1. If actorId is non-null, filter exact match.
+2. If resourceTyre is non-null, filter exact match.
+3. If resourceld is non-null, filter exact match.
+4. If eventType is non-null, filter exact match.
+5. If from is non-null, eventTimestamp >= from.
+6. If to is non-null, eventlimestamp ‹= to.
+7. If includeArchived is null or false, archived must be false.
+8. Sort will be handled by service/controller, not here.
+9. Use Spring Data JPA Specification.
+10. Output complete Java file only.
+
+======================================================
+Prompt 9 
