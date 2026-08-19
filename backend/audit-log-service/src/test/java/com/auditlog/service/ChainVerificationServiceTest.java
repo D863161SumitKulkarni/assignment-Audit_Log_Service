@@ -6,11 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import com.auditlog.dto.VerifyChainResponse;
 import com.auditlog.entity.AuditEvent;
 import com.auditlog.repository.AuditEventRepository;
+import com.auditlog.util.JsonUtil;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,13 +34,21 @@ class ChainVerificationServiceTest {
     @Mock
     private HashService hashService;
 
+        @Mock
+        private JsonUtil jsonUtil;
+
     private ChainVerificationService chainVerificationService;
 
     @BeforeEach
     void setUp() {
         chainVerificationService = new ChainVerificationService(
                 auditEventRepository,
-                hashService);
+                hashService,
+                jsonUtil);
+        lenient().when(jsonUtil.fromJsonToMap(any()))
+                .thenReturn(java.util.Map.of("value", "original"));
+        lenient().when(jsonUtil.toCanonicalJson(any()))
+                .thenReturn("original-payload");
     }
 
     @Test

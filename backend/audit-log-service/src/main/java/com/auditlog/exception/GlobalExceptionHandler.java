@@ -1,12 +1,15 @@
 package com.auditlog.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -51,6 +54,30 @@ public class GlobalExceptionHandler {
                 exception.getMessage(),
                 request);
     }
+
+    @ExceptionHandler({
+            MethodArgumentTypeMismatchException.class,
+            HttpMessageNotReadableException.class})
+    public ResponseEntity<ApiErrorResponse> handleMalformedRequest(
+            Exception exception,
+            HttpServletRequest request) {
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                "Bad Request",
+                "Request parameter or body could not be parsed",
+                request);
+    }
+
+        @ExceptionHandler(ConstraintViolationException.class)
+        public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
+                        ConstraintViolationException exception,
+                        HttpServletRequest request) {
+                return buildResponse(
+                                HttpStatus.BAD_REQUEST,
+                                "Bad Request",
+                                exception.getMessage(),
+                                request);
+        }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGenericException(

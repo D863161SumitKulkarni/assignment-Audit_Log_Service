@@ -4,6 +4,8 @@ import com.auditlog.dto.AuditEventResponse;
 import com.auditlog.dto.CreateAuditEventRequest;
 import com.auditlog.service.AuditEventService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.time.Instant;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,8 +18,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
 
 @RestController
+@Validated
 @RequestMapping("/api/audit")
 public class AuditEventController {
 
@@ -43,8 +47,8 @@ public class AuditEventController {
             @RequestParam(required = false) Instant from,
             @RequestParam(required = false) Instant to,
             @RequestParam(defaultValue = "false") Boolean includeArchived,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         Pageable pageable = PageRequest.of(page, size);
 
         return ResponseEntity.ok(auditEventService.queryEvents(

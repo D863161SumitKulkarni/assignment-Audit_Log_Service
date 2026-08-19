@@ -3,6 +3,7 @@ package com.auditlog.service;
 import com.auditlog.dto.VerifyChainResponse;
 import com.auditlog.entity.AuditEvent;
 import com.auditlog.repository.AuditEventRepository;
+import com.auditlog.util.JsonUtil;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +14,15 @@ public class ChainVerificationService {
 
     private final AuditEventRepository auditEventRepository;
     private final HashService hashService;
+    private final JsonUtil jsonUtil;
 
     public ChainVerificationService(
             AuditEventRepository auditEventRepository,
-            HashService hashService) {
+            HashService hashService,
+            JsonUtil jsonUtil) {
         this.auditEventRepository = auditEventRepository;
         this.hashService = hashService;
+        this.jsonUtil = jsonUtil;
     }
 
     public VerifyChainResponse verifyChain() {
@@ -39,12 +43,14 @@ public class ChainVerificationService {
                         "Previous hash does not match the expected chain value");
             }
 
-            String recalculatedHash = hashService.calculateAuditEventHash(
+                String payloadCanonicalJson = jsonUtil.toCanonicalJson(
+                    jsonUtil.fromJsonToMap(auditEvent.getPayloadOriginal()));
+                String recalculatedHash = hashService.calculateAuditEventHash(
                     auditEvent.getEventType(),
                     auditEvent.getActorId(),
                     auditEvent.getResourceType(),
                     auditEvent.getResourceId(),
-                    auditEvent.getPayloadOriginal(),
+                    payloadCanonicalJson,
                     auditEvent.getEventTimestamp(),
                     auditEvent.getPreviousHash());
 
