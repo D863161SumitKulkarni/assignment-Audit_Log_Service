@@ -618,3 +618,45 @@ Requirements:
 
 ====================================================
 
+Scenerio B Redaction
+
+====================================================
+
+Prompt 1
+
+Create RetentionController-java in package com.audit-og. controtter.
+Base path:
+/api/audit/retention
+Endpoint:
+POST /archive
+Query param:
+days optional integer default 90
+Response:
+Map with archivedCount and message.
+Requirements:
+1. Use RetentionService.
+2. Use ResponseEntity.
+3. Do not delete records.
+4. Make it clear this is archival only.
+5. Output complete Java file only.
+
+Create RedactionController.java in package com. auditlog. contreller•
+Base path:
+/api/audit/events
+Endpoint:
+POST /{eventId}/redact
+Path variable:
+UUID eventId
+Request:
+RedactAuditEventRequest
+Response:
+AuditEventResponse
+Requirements:
+1. Use Redactionservice.
+2. Use @Valid on request body.
+3. Use ResponseEntaty.
+4. Do not expose general update API.
+5. This endpoint is only for controlled redaction metadata and redacted response payload.
+6. Output complete Java file only.
+
+===================================================
