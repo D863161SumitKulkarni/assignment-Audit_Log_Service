@@ -477,37 +477,6 @@ I
 15. Annotate write method with @Transactional.
 16. Output complete Java file only.
 
-Create AuditEventController.java in package com.auditlog.controller.
-Purpose:
-Expose REST APIs for audit event write and query.
-Base path:
-/api/audit
-Endpoints:
-1. POST /events
-Request body: GreateAuditEventRequest
-Response: AuditEventResponse
-Status: 201 Created
-2. GET /events
-Query params:
-- actorId optional
-- resourcelype optional
-- resourceId optional
-- eventType optional
-- from optional Instant ISO-8601
-- to optional Instant ISO-8601
-- includeArchived optional Boolean default false
-- page default 0
-- size default 20
-Response: Page<AuditEventResponse>
-Requirements:
-1. Use @RestController.
-2. Use @RequestMapping("/api/audit").
-3. Use @Valid.
-4. Do not expose update or delete APIs.
-5. Add OpenAlI annotations if available.
-6. Use ResponseEntity.
-7. Output complete Java file only.
-
 Create ChainVerificationService.java in package com.auditlog.service.
 Purpose:
 Verify the tamper-evident audit log hash chain.
@@ -539,4 +508,68 @@ d. Set expectedPreviousHash to record. currentHash.
 11. Output complete Java file only.
 
 =====================================================
+
+Prompt 11 Controller Creation
+
+Create AuditEventController.java in package com.auditlog.controller.
+Purpose:
+Expose REST APIs for audit event write and query.
+Base path:
+/api/audit
+Endpoints:
+1. POST /events
+Request body: GreateAuditEventRequest
+Response: AuditEventResponse
+Status: 201 Created
+2. GET /events
+Query params:
+- actorId optional
+- resourcelype optional
+- resourceId optional
+- eventType optional
+- from optional Instant ISO-8601
+- to optional Instant ISO-8601
+- includeArchived optional Boolean default false
+- page default 0
+- size default 20
+Response: Page<AuditEventResponse>
+Requirements:
+1. Use @RestController.
+2. Use @RequestMapping("/api/audit").
+3. Use @Valid.
+4. Do not expose update or delete APIs.
+5. Add OpenAlI annotations if available.
+6. Use ResponseEntity.
+7. Output complete Java file only.
+
+Create AuditVerificationController. java in package com. auditlog.controller.
+Base path: /api/audit
+Endpoint:
+GET / verify
+Response:
+Verify ChainResponse
+Requirements:
+1. Use ChainVerificationservice.
+2. Return HTTP 200 for both intact and broken chain results.
+3. Do not throw exception when chain is broken because broken chain is a valid verification result.
+4. Use @RestController.
+5. Use ResponseEntity.
+6. Output complete Java file only.
+
+Test SQL Tamper detection
+
+Create database/tamper-test.sql for PostgresQL.
+Purpose:
+Demonstrate tamper detection for the audit log service.
+Requirements:
+1. Include comments explaining test flow.
+2. Query first few audit event records.
+3. Directly update payloadoriginal of one existing record without updating current hash.
+4. Query the modified record.
+5. Include expected result:
+- GET /api/audit/verify should return chainIntact false
+- violationType should be CURRENT_HASH_MISMATCH
+6. Include a rollback note for local testing only.
+7. Output SQL only.|
+=======================================================
 
