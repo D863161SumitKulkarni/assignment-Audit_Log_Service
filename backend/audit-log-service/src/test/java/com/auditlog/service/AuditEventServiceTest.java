@@ -18,6 +18,7 @@ import com.auditlog.entity.AuditEvent;
 import com.auditlog.repository.AuditEventRepository;
 import com.auditlog.util.JsonUtil;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -129,7 +130,8 @@ class AuditEventServiceTest {
         Instant eventTimestamp = captureSavedEvent().getEventTimestamp();
         Instant after = Instant.now();
         assertNotNull(eventTimestamp);
-        assertTrueBetween(eventTimestamp, before, after);
+        // The service truncates to microseconds, so compare against an equally truncated lower bound.
+        assertTrueBetween(eventTimestamp, before.truncatedTo(ChronoUnit.MICROS), after);
     }
 
     @Test

@@ -7,6 +7,7 @@ import com.auditlog.repository.AuditEventRepository;
 import com.auditlog.repository.AuditEventSpecifications;
 import com.auditlog.util.JsonUtil;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -47,7 +48,9 @@ public class AuditEventService {
         }
 
         acquireAppendLock();
-        Instant eventTimestamp = Instant.now();
+        // PostgreSQL TIMESTAMPTZ stores microsecond precision; truncate here so the hashed value
+        // matches what is read back, avoiding a false CURRENT_HASH_MISMATCH on verification.
+        Instant eventTimestamp = Instant.now().truncatedTo(ChronoUnit.MICROS);
         String payloadOriginal = jsonUtil.toCanonicalJson(request.getPayload());
         String previousHash = auditEventRepository.findTopByOrderByIdDesc()
                 .map(AuditEvent::getCurrentHash)

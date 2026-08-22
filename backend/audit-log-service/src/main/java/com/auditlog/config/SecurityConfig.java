@@ -1,11 +1,16 @@
 package com.auditlog.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.http.HttpMethod;
@@ -14,6 +19,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 
@@ -72,5 +79,14 @@ public class SecurityConfig {
                 JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
                 converter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter());
                 return converter;
+    }
+
+    // Demo-only: validates tokens with a shared secret instead of a real OIDC issuer, never for production use.
+    @Bean
+    @Profile("demo")
+    JwtDecoder demoJwtDecoder(@Value("${security.jwt.demo-secret}") String demoSecret) {
+        SecretKeySpec secretKey = new SecretKeySpec(
+                demoSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        return NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS256).build();
     }
 }
